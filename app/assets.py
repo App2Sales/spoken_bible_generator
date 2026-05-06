@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import os
+import re
 import tempfile
 import urllib.error
 import urllib.parse
@@ -85,12 +86,12 @@ class AssetManager:
                     f"{ref_text_path}. REF_TEXT é obrigatório quando TTS_MODE=voice_clone e X_VECTOR_ONLY_MODE=false."
                 )
         else:
-            ref_text = ref_text_path.read_text(encoding="utf-8").strip()
+            ref_text = clean_reference_text(ref_text_path.read_text(encoding="utf-8"))
             if not ref_text and not x_vector_only_mode:
                 raise ValueError(
                     "REF_TEXT_PATH está vazio. REF_TEXT é obrigatório quando TTS_MODE=voice_clone e X_VECTOR_ONLY_MODE=false."
                 )
-            ref_text_sha256 = file_sha256(ref_text_path)
+            ref_text_sha256 = text_sha256(ref_text)
 
         return ResolvedAssets(
             bible_db_path=str(bible_db_path),
@@ -174,3 +175,18 @@ def suffix_from_url(url: str | None, *, default: str) -> str:
         return default
     suffix = Path(urllib.parse.urlparse(url).path).suffix.lower()
     return suffix or default
+
+
+def clean_reference_text(text: str) -> str:
+    lines = []
+    for line in text.splitlines():
+        stripped = line.strip()
+        if not stripped:
+            continue
+        if stripped.isdigit():
+            continue
+        if re.match(r"^\d{2}:\d{2}:\d{2}[,.]\d{3}\s+-->\s+\d{2}:\d{2}:\d{2}[,.]\d{3}", stripped):
+            continue
+        lines.append(stripped)
+
+    return " ".join(" ".join(lines).split())
