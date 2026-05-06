@@ -39,7 +39,7 @@ class Settings:
     voice_id: str = os.getenv("VOICE_ID", "narrador_principal")
     default_language: str = os.getenv("DEFAULT_LANGUAGE", "Portuguese")
     x_vector_only_mode: bool = env_bool("X_VECTOR_ONLY_MODE", False)
-    chunk_max_chars: int = int(os.getenv("CHUNK_MAX_CHARS", "1200"))
+    chunk_max_chars: int = int(os.getenv("CHUNK_MAX_CHARS", "400"))
     public_base_url: str | None = os.getenv("PUBLIC_BASE_URL")
 
 

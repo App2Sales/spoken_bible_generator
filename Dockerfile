@@ -11,7 +11,8 @@ ENV DEBIAN_FRONTEND=noninteractive \
     REF_TEXT_PATH=/data/voices/narrador.txt \
     VOICE_ID=narrador_principal \
     DEFAULT_LANGUAGE=Portuguese \
-    X_VECTOR_ONLY_MODE=false
+    X_VECTOR_ONLY_MODE=false \
+    CHUNK_MAX_CHARS=400
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends python3 python3-pip ffmpeg libsndfile1 sox \

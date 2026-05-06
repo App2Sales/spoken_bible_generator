@@ -19,6 +19,7 @@ REF_TEXT_PATH=/data/voices/narrador.txt
 VOICE_ID=narrador_principal
 DEFAULT_LANGUAGE=Portuguese
 X_VECTOR_ONLY_MODE=false
+CHUNK_MAX_CHARS=400
 ```
 
 No startup, a aplicação carrega o modelo uma vez. O `voice_clone_prompt` é criado uma vez por conjunto de assets, identificado por `voice_id`, SHA-256 do áudio de referência, SHA-256 da transcrição e `X_VECTOR_ONLY_MODE`.
