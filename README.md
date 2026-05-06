@@ -88,8 +88,9 @@ Resposta esperada:
   "chapter": 23,
   "voice_id": "narrador_principal",
   "audio_path": "/outputs/default/salmos/salmos_023.mp3",
-  "audio_url": "https://...",
+  "audio_url": "/download/salmos/23",
   "metadata_path": "/outputs/default/salmos/metadata/salmos_023.json",
+  "metadata_url": "/download/salmos/23/metadata",
   "duration_seconds": 123.45,
   "sha256": "...",
   "input_hash": "...",
@@ -113,6 +114,18 @@ Resposta esperada:
   "x_vector_only_mode": false,
   "cached_voice_prompts": 1
 }
+```
+
+Baixar áudio gerado:
+
+```bash
+curl -L "http://127.0.0.1:8000/download/salmos/23" -o salmos_023.mp3
+```
+
+Baixar metadata:
+
+```bash
+curl -L "http://127.0.0.1:8000/download/salmos/23/metadata" -o salmos_023.json
 ```
 
 ## Assets por URL

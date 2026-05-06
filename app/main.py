@@ -2,14 +2,17 @@ from __future__ import annotations
 
 import logging
 from contextlib import asynccontextmanager
+from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
 from app.assets import AssetRequest
 from app.config import settings
 from app.service import GenerationService
+from app.utils import slugify
 
 logging.basicConfig(level=logging.INFO)
 
@@ -62,6 +65,40 @@ def health() -> dict[str, str]:
 @app.get("/voice")
 def voice() -> dict[str, Any]:
     return service.voice_info()
+
+
+@app.get("/download/{book}/{chapter}")
+def download_audio(book: str, chapter: int) -> FileResponse:
+    book_slug = slugify(book)
+    audio_path = Path(settings.output_dir) / "default" / book_slug / f"{book_slug}_{chapter:03d}.mp3"
+    if not audio_path.exists():
+        raise HTTPException(status_code=404, detail="Áudio não encontrado")
+
+    return FileResponse(
+        audio_path,
+        media_type="audio/mpeg",
+        filename=f"{book_slug}_{chapter:03d}.mp3",
+    )
+
+
+@app.get("/download/{book}/{chapter}/metadata")
+def download_metadata(book: str, chapter: int) -> FileResponse:
+    book_slug = slugify(book)
+    metadata_path = (
+        Path(settings.output_dir)
+        / "default"
+        / book_slug
+        / "metadata"
+        / f"{book_slug}_{chapter:03d}.json"
+    )
+    if not metadata_path.exists():
+        raise HTTPException(status_code=404, detail="Metadata não encontrado")
+
+    return FileResponse(
+        metadata_path,
+        media_type="application/json",
+        filename=f"{book_slug}_{chapter:03d}.json",
+    )
 
 
 @app.post("/generate")

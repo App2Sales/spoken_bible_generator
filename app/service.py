@@ -122,8 +122,9 @@ class GenerationService:
             if metadata.get("input_hash") == input_hash:
                 metadata["status"] = "completed"
                 metadata["audio_path"] = str(audio_path)
-                metadata["audio_url"] = self._audio_url(audio_path, upload)
+                metadata["audio_url"] = self._api_url(f"/download/{book_slug}/{chapter}")
                 metadata["metadata_path"] = str(metadata_path)
+                metadata["metadata_url"] = self._api_url(f"/download/{book_slug}/{chapter}/metadata")
                 return metadata
 
         voice_clone_prompt = self.tts.get_voice_clone_prompt(
@@ -189,8 +190,9 @@ class GenerationService:
             "status": "completed",
             **metadata,
             "audio_path": str(audio_path),
-            "audio_url": self._audio_url(audio_path, upload),
+            "audio_url": self._api_url(f"/download/{book_slug}/{chapter}"),
             "metadata_path": str(metadata_path),
+            "metadata_url": self._api_url(f"/download/{book_slug}/{chapter}/metadata"),
         }
 
     def _input_hash(
@@ -226,11 +228,10 @@ class GenerationService:
             }
         )
 
-    def _audio_url(self, audio_path: Path, upload: bool) -> str | None:
-        if not upload or not self.settings.public_base_url:
-            return None
-        relative = audio_path.relative_to(Path(self.settings.output_dir)).as_posix()
-        return f"{self.settings.public_base_url.rstrip('/')}/outputs/{relative}"
+    def _api_url(self, path: str) -> str:
+        if self.settings.public_base_url:
+            return f"{self.settings.public_base_url.rstrip('/')}{path}"
+        return path
 
 
 def chunk_units(units: list[str], max_chars: int) -> list[str]:
