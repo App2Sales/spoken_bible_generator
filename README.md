@@ -185,8 +185,8 @@ Clone e instale dependências Python:
 
 ```bash
 cd /workspace
-git clone https://github.com/App2Sales/poken_bible_generator.git
-cd poken_bible_generator
+git clone https://github.com/App2Sales/spoken_bible_generator.git
+cd spoken_bible_generator
 python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
