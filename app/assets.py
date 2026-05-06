@@ -55,7 +55,7 @@ class AssetManager:
             request.ref_audio_url,
             default_path=self.settings.ref_audio_path,
             subdir="voices",
-            suffix=".wav",
+            suffix=suffix_from_url(request.ref_audio_url, default=".wav"),
             force_download=force_download,
         )
 
@@ -167,3 +167,10 @@ class AssetManager:
     def _require_file(path: Path, env_name: str) -> None:
         if not path.exists():
             raise FileNotFoundError(f"{env_name} não existe: {path}")
+
+
+def suffix_from_url(url: str | None, *, default: str) -> str:
+    if not url:
+        return default
+    suffix = Path(urllib.parse.urlparse(url).path).suffix.lower()
+    return suffix or default
