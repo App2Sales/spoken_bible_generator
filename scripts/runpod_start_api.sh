@@ -4,6 +4,7 @@ set -euo pipefail
 HOST="${HOST:-0.0.0.0}"
 PORT="${PORT:-8000}"
 LOG_PATH="${LOG_PATH:-/workspace/uvicorn_omnivoice.log}"
+PYTHON_BIN="${PYTHON_BIN:-python}"
 DAEMON=false
 
 if [[ "${1:-}" == "--daemon" ]]; then
@@ -26,10 +27,10 @@ export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:T
 mkdir -p "${OUTPUT_DIR}" "${ASSET_CACHE_DIR}"
 
 if [[ "${DAEMON}" == "true" ]]; then
-  nohup uvicorn app.main:app --host "${HOST}" --port "${PORT}" > "${LOG_PATH}" 2>&1 &
+  nohup "${PYTHON_BIN}" -m uvicorn app.main:app --host "${HOST}" --port "${PORT}" > "${LOG_PATH}" 2>&1 &
   echo "API started on ${HOST}:${PORT}. Logs: ${LOG_PATH}"
   echo "PID: $!"
 else
   echo "Starting API on ${HOST}:${PORT} with GENERATION_UNIT=${GENERATION_UNIT}"
-  exec uvicorn app.main:app --host "${HOST}" --port "${PORT}"
+  exec "${PYTHON_BIN}" -m uvicorn app.main:app --host "${HOST}" --port "${PORT}"
 fi
