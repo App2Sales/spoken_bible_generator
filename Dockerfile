@@ -14,7 +14,8 @@ ENV DEBIAN_FRONTEND=noninteractive \
     DEFAULT_LANGUAGE=Portuguese \
     X_VECTOR_ONLY_MODE=false \
     GENERATION_UNIT=chapter \
-    CHAPTER_INTRO_PAUSE_SECONDS=1.0
+    CHAPTER_INTRO_PAUSE_SECONDS=1.0 \
+    PERICOPE_PAUSE_SECONDS=0.3
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends python3 python3-pip ffmpeg libsndfile1 \

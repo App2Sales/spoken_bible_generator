@@ -51,6 +51,7 @@ class GenerateRequest(BaseModel):
     include_verse_numbers: bool = False
     include_chapter_intro: bool = True
     chapter_intro_pause_seconds: float | None = None
+    pericope_pause_seconds: float | None = None
     force: bool = False
     upload: bool = True
     assets: AssetsRequest | None = None
@@ -143,6 +144,7 @@ def generate(request: GenerateRequest) -> dict[str, Any]:
             include_verse_numbers=request.include_verse_numbers,
             include_chapter_intro=request.include_chapter_intro,
             chapter_intro_pause_seconds=request.chapter_intro_pause_seconds,
+            pericope_pause_seconds=request.pericope_pause_seconds,
             force=request.force,
             upload=request.upload,
             assets=to_asset_request(request.assets),

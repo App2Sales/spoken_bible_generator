@@ -28,6 +28,7 @@ def main() -> int:
     parser.add_argument("--tts-backend")
     parser.add_argument("--model-id")
     parser.add_argument("--generation-unit", choices=["chapter", "pericope"])
+    parser.add_argument("--pericope-pause-seconds", type=float)
     parser.add_argument("--omnivoice-num-step", type=int)
     parser.add_argument("--omnivoice-guidance-scale", type=float)
     parser.add_argument("--omnivoice-denoise", action="store_true")
@@ -73,6 +74,8 @@ def main() -> int:
             payload["model_id"] = args.model_id
         if args.generation_unit:
             payload["generation_unit"] = args.generation_unit
+        if args.pericope_pause_seconds is not None:
+            payload["pericope_pause_seconds"] = args.pericope_pause_seconds
         omnivoice = {
             key: value
             for key, value in {

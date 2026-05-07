@@ -42,6 +42,7 @@ class Settings:
     x_vector_only_mode: bool = env_bool("X_VECTOR_ONLY_MODE", False)
     generation_unit: str = os.getenv("GENERATION_UNIT", "chapter")
     chapter_intro_pause_seconds: float = float(os.getenv("CHAPTER_INTRO_PAUSE_SECONDS", "0.5"))
+    pericope_pause_seconds: float = float(os.getenv("PERICOPE_PAUSE_SECONDS", "0.3"))
     public_base_url: str | None = os.getenv("PUBLIC_BASE_URL")
 
 

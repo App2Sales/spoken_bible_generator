@@ -22,6 +22,7 @@ DEFAULT_LANGUAGE=Portuguese
 X_VECTOR_ONLY_MODE=false
 GENERATION_UNIT=chapter
 CHAPTER_INTRO_PAUSE_SECONDS=1.0
+PERICOPE_PAUSE_SECONDS=0.3
 ```
 
 Config OmniVoice base usada nos melhores testes até agora:
@@ -71,6 +72,7 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000
   "include_verse_numbers": false,
   "include_chapter_intro": true,
   "chapter_intro_pause_seconds": 1.0,
+  "pericope_pause_seconds": 0.3,
   "generation_unit": "chapter",
   "force": false,
   "upload": true,
@@ -93,7 +95,9 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000
 
 `generation_unit` é opcional por request. Se omitido, usa `GENERATION_UNIT`. Valores aceitos: `chapter` e `pericope`.
 
-Resposta inclui `requested_generation_unit`, `generation_unit`, `generation_units`, `tts_backend`, `omnivoice_options`, hashes dos assets, chunks de áudio, duração, SHA-256 do MP3 e `input_hash`.
+`pericope_pause_seconds` é opcional por request. Se omitido, usa `PERICOPE_PAUSE_SECONDS`, com default `0.3`. A pausa é inserida apenas entre perícopes quando o modo efetivo é `pericope` e o capítulo tem mais de uma perícope.
+
+Resposta inclui `requested_generation_unit`, `generation_unit`, `generation_units`, `tts_backend`, `omnivoice_options`, hashes dos assets, chunks de áudio, pausas, duração, SHA-256 do MP3 e `input_hash`.
 
 Quando `generation_unit=pericope`, cada item de `generation_units` registra `title`, `start_verse`, `end_verse`, `text_chars` e `sample_rate`.
 
@@ -150,7 +154,7 @@ Regras:
 
 ## Cache e Metadata
 
-O `input_hash` considera `book_id`, `chapter`, texto completo do capítulo, `model_id`, `tts_mode`, `tts_backend`, `voice_id`, SHA-256 do SQLite, SHA-256 do áudio de referência, SHA-256 da transcrição, idioma, flags de inclusão, pausa do título, `bitrate`, `requested_generation_unit` e opções OmniVoice normalizadas.
+O `input_hash` considera `book_id`, `chapter`, texto completo do capítulo, `model_id`, `tts_mode`, `tts_backend`, `voice_id`, SHA-256 do SQLite, SHA-256 do áudio de referência, SHA-256 da transcrição, idioma, flags de inclusão, pausa do título, pausa entre perícopes, `bitrate`, `requested_generation_unit` e opções OmniVoice normalizadas.
 
 O metadata JSON é salvo em `/outputs/omnivoice/<livro>/metadata/<livro>_<capitulo>.json`. Áudios são salvos em `/outputs/omnivoice/<livro>/<livro>_<capitulo>.mp3`.
 
@@ -217,7 +221,7 @@ Para rodar em background:
 bash scripts/runpod_start_api.sh --daemon
 ```
 
-Os scripts usam `GENERATION_UNIT=pericope` por padrão. Para testar capítulo inteiro, rode `GENERATION_UNIT=chapter bash scripts/runpod_start_api.sh`.
+Os scripts usam `GENERATION_UNIT=pericope` e `PERICOPE_PAUSE_SECONDS=0.3` por padrão. Para testar capítulo inteiro, rode `GENERATION_UNIT=chapter bash scripts/runpod_start_api.sh`.
 
 Teste:
 
@@ -243,6 +247,7 @@ Formato de chamada:
     "include_verse_numbers": false,
     "include_chapter_intro": true,
     "chapter_intro_pause_seconds": 1.0,
+    "pericope_pause_seconds": 0.3,
     "force": false,
     "upload": true,
     "assets": {
@@ -285,6 +290,7 @@ python scripts/generate_psalms.py \
   --tts-backend omnivoice \
   --model-id k2-fsa/OmniVoice \
   --generation-unit chapter \
+  --pericope-pause-seconds 0.3 \
   --bible-db-url https://exemplo.com/bible.sqlite \
   --ref-audio-url https://exemplo.com/narrador.wav \
   --ref-text "Texto exato do áudio de referência"

@@ -68,6 +68,7 @@ class GenerationService:
         include_verse_numbers: bool,
         include_chapter_intro: bool,
         chapter_intro_pause_seconds: float | None,
+        pericope_pause_seconds: float | None,
         force: bool,
         upload: bool,
         assets: AssetRequest | None = None,
@@ -105,6 +106,14 @@ class GenerationService:
             raise ValueError("chapter_intro_pause_seconds deve estar entre 0 e 10")
         if not include_chapter_intro:
             pause_seconds = 0
+
+        selected_pericope_pause_seconds = (
+            pericope_pause_seconds
+            if pericope_pause_seconds is not None
+            else self.settings.pericope_pause_seconds
+        )
+        if selected_pericope_pause_seconds < 0 or selected_pericope_pause_seconds > 10:
+            raise ValueError("pericope_pause_seconds deve estar entre 0 e 10")
 
         requested_voice_id = voice_id or self.settings.voice_id
 
@@ -148,6 +157,7 @@ class GenerationService:
             include_verse_numbers=include_verse_numbers,
             include_chapter_intro=include_chapter_intro,
             chapter_intro_pause_seconds=pause_seconds,
+            pericope_pause_seconds=selected_pericope_pause_seconds,
             bitrate=bitrate,
             tts_backend=selected_backend,
             model_id=selected_model_id,
@@ -243,6 +253,20 @@ class GenerationService:
             if generation_unit.get("end_verse") is not None:
                 unit_metadata["end_verse"] = generation_unit["end_verse"]
             generation_unit_metadata.append(unit_metadata)
+            if (
+                effective_generation_unit == "pericope"
+                and selected_pericope_pause_seconds > 0
+                and unit_index < len(generation_units)
+            ):
+                audio_chunks.append((silence(selected_pericope_pause_seconds, sample_rate), sample_rate))
+                chunk_metadata.append(
+                    {
+                        "index": len(chunk_metadata) + 1,
+                        "type": "pericope_pause",
+                        "duration_seconds": selected_pericope_pause_seconds,
+                        "sample_rate": sample_rate,
+                    }
+                )
 
         fallback_duration = write_audio_file(audio_chunks, audio_path, bitrate)
         duration_seconds = round(probe_duration_seconds(audio_path, fallback_duration), 2)
@@ -275,6 +299,7 @@ class GenerationService:
             "include_verse_numbers": include_verse_numbers,
             "include_chapter_intro": include_chapter_intro,
             "chapter_intro_pause_seconds": pause_seconds,
+            "pericope_pause_seconds": selected_pericope_pause_seconds,
             "chunks": chunk_metadata,
             "generation_units": generation_unit_metadata,
             "duration_seconds": duration_seconds,
@@ -306,6 +331,7 @@ class GenerationService:
         include_verse_numbers: bool,
         include_chapter_intro: bool,
         chapter_intro_pause_seconds: float,
+        pericope_pause_seconds: float,
         bitrate: str,
         tts_backend: str,
         model_id: str,
@@ -329,6 +355,7 @@ class GenerationService:
                 "include_verse_numbers": include_verse_numbers,
                 "include_chapter_intro": include_chapter_intro,
                 "chapter_intro_pause_seconds": chapter_intro_pause_seconds,
+                "pericope_pause_seconds": pericope_pause_seconds,
                 "bitrate": bitrate,
                 "omnivoice_options": omnivoice_options,
                 "requested_generation_unit": requested_generation_unit,

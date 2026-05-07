@@ -34,6 +34,7 @@ def handler(event: dict[str, Any]) -> dict[str, Any]:
         include_verse_numbers=parse_bool(payload.get("include_verse_numbers", False)),
         include_chapter_intro=parse_bool(payload.get("include_chapter_intro", True)),
         chapter_intro_pause_seconds=parse_optional_float(payload.get("chapter_intro_pause_seconds")),
+        pericope_pause_seconds=parse_optional_float(payload.get("pericope_pause_seconds")),
         force=parse_bool(payload.get("force", False)),
         upload=parse_bool(payload.get("upload", True)),
         assets=asset_request(payload.get("assets")),
