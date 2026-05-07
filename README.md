@@ -185,39 +185,39 @@ Use `--dry-run` para validar sem escrever. Por padrão, o script faz upsert incr
 
 ## RunPod Pod Manual
 
-Instale dependências do sistema:
-
-```bash
-apt-get update
-apt-get install -y git ffmpeg libsndfile1 sqlite3
-```
-
-Clone e instale dependências Python:
+Clone o projeto:
 
 ```bash
 cd /workspace
 git clone https://github.com/App2Sales/spoken_bible_generator.git
 cd spoken_bible_generator
-python -m pip install --upgrade pip
-pip install -r requirements.txt
 ```
 
-Inicie a API:
+Instale dependências e valide CUDA/OmniVoice:
 
 ```bash
-OUTPUT_DIR=/workspace/outputs \
-ASSET_CACHE_DIR=/workspace/assets \
-TTS_BACKEND=omnivoice \
-MODEL_ID=k2-fsa/OmniVoice \
-TTS_MODE=voice_clone \
-VOICE_ID=narrador_principal \
-DEFAULT_LANGUAGE=Portuguese \
-X_VECTOR_ONLY_MODE=false \
-GENERATION_UNIT=chapter \
-CHAPTER_INTRO_PAUSE_SECONDS=1.0 \
-PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True \
-nohup uvicorn app.main:app --host 0.0.0.0 --port 8000 > /workspace/uvicorn_omnivoice.log 2>&1 &
+bash scripts/runpod_install.sh
 ```
+
+Inicie a API em foreground:
+
+```bash
+bash scripts/runpod_start_api.sh
+```
+
+Ou instale e inicie em um único comando:
+
+```bash
+bash scripts/runpod_bootstrap.sh
+```
+
+Para rodar em background:
+
+```bash
+bash scripts/runpod_start_api.sh --daemon
+```
+
+Os scripts usam `GENERATION_UNIT=pericope` por padrão. Para testar capítulo inteiro, rode `GENERATION_UNIT=chapter bash scripts/runpod_start_api.sh`.
 
 Teste:
 
