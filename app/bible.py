@@ -89,10 +89,21 @@ class BibleRepository:
                 select verse, text, head, rank
                 from texts
                 where book_id = ? and chapter_num = ?
-                order by rank asc
+                order by rank asc, verse asc, _id asc
                 """,
                 (resolved.book_id, chapter),
             ).fetchall()
+            pericope_rows = []
+            if table_exists(connection, "pericopes"):
+                pericope_rows = connection.execute(
+                    """
+                    select verse, title
+                    from pericopes
+                    where book_id = ? and chapter_num = ?
+                    order by verse asc
+                    """,
+                    (resolved.book_id, chapter),
+                ).fetchall()
 
         if not rows:
             raise ValueError(f"Texto não encontrado para {resolved.title} {chapter}")
@@ -101,26 +112,35 @@ class BibleRepository:
         if include_chapter_intro:
             units.append(f"{resolved.title}, capítulo {chapter}.")
 
+        pericope_titles_by_verse = {
+            int(row["verse"]): " ".join(str(row["title"] or "").split())
+            for row in pericope_rows
+            if row["verse"] is not None and str(row["title"] or "").strip()
+        }
         pericopes: list[list[str]] = []
         current_pericope: list[str] = []
-        heading_count = 0
+        heading_count = len(pericope_titles_by_verse)
 
         for row in rows:
-            is_heading = bool(row["head"])
+            if bool(row["head"]):
+                continue
+
+            verse = int(row["verse"] or 0)
+            pericope_title = pericope_titles_by_verse.get(verse)
+            if pericope_title:
+                if current_pericope:
+                    pericopes.append(current_pericope)
+                    current_pericope = []
+                if include_headings:
+                    units.append(pericope_title)
+                    current_pericope.append(pericope_title)
+
             text = " ".join(str(row["text"] or "").split())
             if not text:
                 continue
 
-            if is_heading:
-                heading_count += 1
-                if current_pericope:
-                    pericopes.append(current_pericope)
-                    current_pericope = []
-                if not include_headings:
-                    continue
-
-            if include_verse_numbers and int(row["verse"] or 0) > 0:
-                text = f"Versículo {int(row['verse'])}. {text}"
+            if include_verse_numbers and verse > 0:
+                text = f"Versículo {verse}. {text}"
             units.append(text)
             current_pericope.append(text)
 
@@ -138,3 +158,11 @@ class BibleRepository:
             pericopes=pericope_texts,
             heading_count=heading_count,
         )
+
+
+def table_exists(connection: sqlite3.Connection, table: str) -> bool:
+    row = connection.execute(
+        "select 1 from sqlite_master where type = 'table' and name = ?",
+        (table,),
+    ).fetchone()
+    return row is not None

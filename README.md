@@ -95,7 +95,9 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000
 
 Resposta inclui `requested_generation_unit`, `generation_unit`, `generation_units`, `tts_backend`, `omnivoice_options`, hashes dos assets, chunks de áudio, duração, SHA-256 do MP3 e `input_hash`.
 
-`chapter` envia o corpo inteiro do capítulo em uma chamada `model.generate()`. `pericope` agrupa por linhas com `head=1` no SQLite; se o banco não tiver headings/perícopes, o modo efetivo cai para `chapter` e a metadata registra `requested_generation_unit` diferente de `generation_unit`.
+`chapter` envia o corpo inteiro do capítulo em uma chamada `model.generate()`. `pericope` agrupa pelos versículos iniciais registrados na tabela opcional `pericopes`; se o banco não tiver perícopes, o modo efetivo cai para `chapter` e a metadata registra `requested_generation_unit` diferente de `generation_unit`.
+
+Para `pericope`, o app lê a tabela opcional `pericopes`. A tabela `texts` não é alterada, preservando compatibilidade com apps existentes que usam o mesmo SQLite.
 
 Baixar áudio gerado:
 
@@ -149,6 +151,35 @@ Regras:
 O `input_hash` considera `book_id`, `chapter`, texto completo do capítulo, `model_id`, `tts_mode`, `tts_backend`, `voice_id`, SHA-256 do SQLite, SHA-256 do áudio de referência, SHA-256 da transcrição, idioma, flags de inclusão, pausa do título, `bitrate`, `requested_generation_unit` e opções OmniVoice normalizadas.
 
 O metadata JSON é salvo em `/outputs/omnivoice/<livro>/metadata/<livro>_<capitulo>.json`. Áudios são salvos em `/outputs/omnivoice/<livro>/<livro>_<capitulo>.mp3`.
+
+## Enriquecer Perícopes
+
+O enriquecimento adiciona apenas uma tabela nova e leve ao SQLite:
+
+```sql
+create table if not exists pericopes (
+  _id integer primary key,
+  book_id integer not null,
+  chapter_num integer not null,
+  verse integer not null,
+  title text not null,
+  ntitle text
+);
+
+create unique index if not exists pericopes_unique_start
+on pericopes (book_id, chapter_num, verse);
+```
+
+Gerar a tabela usando o scraper local e a versão NAA `1840`:
+
+```bash
+python scripts/enrich_pericopes.py \
+  --db-path bibles/naa.db \
+  --scraper-dir /Users/samuelbezerrab/Developer/node/bible-scraper-fork \
+  --version-id 1840
+```
+
+Use `--dry-run` para validar sem escrever. Por padrão, o script faz upsert incremental; use `--force` para recriar as perícopes dos livros selecionados. O script cria um backup antes de modificar o banco.
 
 ## RunPod Pod Manual
 
